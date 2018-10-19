@@ -176,12 +176,14 @@
 		var valueSizeClasses = [
 			options.cssClasses.valueNormal,
 			options.cssClasses.valueLarge,
-			options.cssClasses.valueSub
+			options.cssClasses.valueSub,
+			options.cssClasses.valueDisabled
 		];
 		var markerSizeClasses = [
 			options.cssClasses.markerNormal,
 			options.cssClasses.markerLarge,
-			options.cssClasses.markerSub
+			options.cssClasses.markerSub,
+			options.cssClasses.markerDisabled
 		];
 		var valueOrientationClasses = [
 			options.cssClasses.valueHorizontal,
@@ -203,6 +205,28 @@
 			return source + ' ' + orientationClasses[options.ort] + ' ' + sizeClasses[type];
 		}
 
+		function checkDisabledClass (node, values, class_name, offset) {
+			var value_index = scope_Spectrum.xVal.indexOf(values[0]);
+			var node_options = scope_Spectrum.xOpts[value_index];
+
+			if (node_options && node_options.disabled) {
+        node.classList.add(class_name);
+        
+        if (offset) {
+          var disabled_marker = scope_Document.createElement('div');
+          disabled_marker.className = options.cssClasses.disabledMarker;
+          disabled_marker.style[options.style] = offset + '%';
+  
+          if (node_options.disable_info) {
+            disabled_marker.setAttribute('data-disable-info', node_options.disable_info);
+          }
+  
+          scope_Base.appendChild(disabled_marker);
+          scope_DisabledMarkers.push(disabled_marker);
+				}
+			}
+		}
+
 		function addSpread ( offset, values ){
 
 			// Apply the filter function, if it is set.
@@ -212,6 +236,8 @@
 			var node = addNodeTo(element, false);
 				node.className = getClasses(values[1], options.cssClasses.marker);
 				node.style[options.style] = offset + '%';
+        // Add disabled class
+				checkDisabledClass(node, values, options.cssClasses.markerDisabled, offset);
 
 			// Values are only appended for points marked '1' or '2'.
 			if ( values[1] ) {
@@ -220,7 +246,20 @@
 				node.setAttribute('data-value', values[0]);
 				node.style[options.style] = offset + '%';
 				node.innerText = formatter.to(values[0]);
+        checkDisabledClass(node, values, options.cssClasses.valueDisabled);
+        node.addEventListener('click', clickOnPip);
 			}
+		}
+    
+    function clickOnPip (event) {
+			var value_item = event.currentTarget;
+			
+			if (value_item.classList.contains(options.cssClasses.valueDisabled)) {
+				return false;
+			}
+			
+      var value = Number(value_item.getAttribute('data-value'));
+      scope_Target.noUiSlider.set(value);
 		}
 
 		// Append all points.
@@ -234,8 +273,16 @@
 	function removePips ( ) {
 		if ( scope_Pips ) {
 			removeElement(scope_Pips);
+			removeDisabledMarkers();
 			scope_Pips = null;
+			scope_DisabledMarkers = [];
 		}
+	}
+	
+	function removeDisabledMarkers () {
+    scope_DisabledMarkers.forEach(function (item) {
+      removeElement(item);
+		});
 	}
 
 	function pips ( grid ) {

@@ -1,4 +1,4 @@
-/*! nouislider - 11.1.0 - 2018-04-02 11:18:13 */
+/*! nouislider - 11.1.0 - 2018-08-08 15:22:34 */
 
 (function (factory) {
 
@@ -141,6 +141,24 @@
 			y: y
 		};
 	}
+  
+  function checkActivePips (values, scope_Pips, options) {
+    if (scope_Pips) {
+      var current_value = Number(values[0]);
+    	var value_items_class = '.'+ options.cssClasses.value;
+      var value_items = scope_Pips.querySelectorAll(value_items_class);
+      
+      for (var item_value_index = 0; item_value_index < value_items.length; item_value_index ++) {
+      	var item = value_items[item_value_index];
+        var item_value = Number(item.getAttribute('data-value'));
+  
+        removeClass(item, options.cssClasses.valueActive);
+        if (item_value === current_value) {
+          addClass(item, options.cssClasses.valueActive);
+        }
+			}
+    }
+  }
 
 	// we provide a function to compute constants instead
 	// of accessing window.* as soon as the module needs it
@@ -299,6 +317,7 @@
 	function handleEntryPoint ( index, value, that ) {
 
 		var percentage;
+		var options;
 
 		// Wrap numerical input in an array.
 		if ( typeof value === "number" ) {
@@ -340,6 +359,14 @@
 		}
 
 		that.xHighestCompleteStep.push(0);
+
+		if (!value[2]) {
+			options = null;
+		} else {
+			options = value[2];
+		}
+		
+		that.xOpts.push(options);
 	}
 
 	function handleStepPoint ( i, n, that ) {
@@ -369,6 +396,7 @@
 		this.xSteps = [ singleStep || false ];
 		this.xNumSteps = [ false ];
 		this.xHighestCompleteStep = [];
+		this.xOpts = [];
 
 		this.snap = snap;
 
@@ -871,12 +899,16 @@
 				markerNormal: 'marker-normal',
 				markerLarge: 'marker-large',
 				markerSub: 'marker-sub',
+				markerDisabled: 'marker-disabled',
 				value: 'value',
 				valueHorizontal: 'value-horizontal',
 				valueVertical: 'value-vertical',
 				valueNormal: 'value-normal',
 				valueLarge: 'value-large',
-				valueSub: 'value-sub'
+				valueSub: 'value-sub',
+				valueDisabled: 'value-disabled',
+				valueActive: 'value-active',
+				disabledMarker: 'disabled-marker'
 			}
 		};
 
@@ -944,6 +976,7 @@ function scope ( target, options, originalOptions ){
 	var scope_Events = {};
 	var scope_Self;
 	var scope_Pips;
+	var scope_DisabledMarkers = [];
 	var scope_Document = target.ownerDocument;
 	var scope_DocumentElement = scope_Document.documentElement;
 	var scope_Body = scope_Document.body;
@@ -1098,6 +1131,8 @@ function scope ( target, options, originalOptions ){
 				handle.children[0].setAttribute('aria-valuemax', max.toFixed(1));
 				handle.children[0].setAttribute('aria-valuenow', now.toFixed(1));
 				handle.children[0].setAttribute('aria-valuetext', text);
+        
+        checkActivePips(values, scope_Pips, options);
 			});
 		});
 	}
@@ -1280,12 +1315,14 @@ function scope ( target, options, originalOptions ){
 		var valueSizeClasses = [
 			options.cssClasses.valueNormal,
 			options.cssClasses.valueLarge,
-			options.cssClasses.valueSub
+			options.cssClasses.valueSub,
+			options.cssClasses.valueDisabled
 		];
 		var markerSizeClasses = [
 			options.cssClasses.markerNormal,
 			options.cssClasses.markerLarge,
-			options.cssClasses.markerSub
+			options.cssClasses.markerSub,
+			options.cssClasses.markerDisabled
 		];
 		var valueOrientationClasses = [
 			options.cssClasses.valueHorizontal,
@@ -1307,6 +1344,28 @@ function scope ( target, options, originalOptions ){
 			return source + ' ' + orientationClasses[options.ort] + ' ' + sizeClasses[type];
 		}
 
+		function checkDisabledClass (node, values, class_name, offset) {
+			var value_index = scope_Spectrum.xVal.indexOf(values[0]);
+			var node_options = scope_Spectrum.xOpts[value_index];
+
+			if (node_options && node_options.disabled) {
+        node.classList.add(class_name);
+        
+        if (offset) {
+          var disabled_marker = scope_Document.createElement('div');
+          disabled_marker.className = options.cssClasses.disabledMarker;
+          disabled_marker.style[options.style] = offset + '%';
+  
+          if (node_options.disable_info) {
+            disabled_marker.setAttribute('data-disable-info', node_options.disable_info);
+          }
+  
+          scope_Base.appendChild(disabled_marker);
+          scope_DisabledMarkers.push(disabled_marker);
+				}
+			}
+		}
+
 		function addSpread ( offset, values ){
 
 			// Apply the filter function, if it is set.
@@ -1316,6 +1375,8 @@ function scope ( target, options, originalOptions ){
 			var node = addNodeTo(element, false);
 				node.className = getClasses(values[1], options.cssClasses.marker);
 				node.style[options.style] = offset + '%';
+        // Add disabled class
+				checkDisabledClass(node, values, options.cssClasses.markerDisabled, offset);
 
 			// Values are only appended for points marked '1' or '2'.
 			if ( values[1] ) {
@@ -1324,7 +1385,20 @@ function scope ( target, options, originalOptions ){
 				node.setAttribute('data-value', values[0]);
 				node.style[options.style] = offset + '%';
 				node.innerText = formatter.to(values[0]);
+        checkDisabledClass(node, values, options.cssClasses.valueDisabled);
+        node.addEventListener('click', clickOnPip);
 			}
+		}
+    
+    function clickOnPip (event) {
+			var value_item = event.currentTarget;
+			
+			if (value_item.classList.contains(options.cssClasses.valueDisabled)) {
+				return false;
+			}
+			
+      var value = Number(value_item.getAttribute('data-value'));
+      scope_Target.noUiSlider.set(value);
 		}
 
 		// Append all points.
@@ -1338,8 +1412,16 @@ function scope ( target, options, originalOptions ){
 	function removePips ( ) {
 		if ( scope_Pips ) {
 			removeElement(scope_Pips);
+			removeDisabledMarkers();
 			scope_Pips = null;
+			scope_DisabledMarkers = [];
 		}
+	}
+	
+	function removeDisabledMarkers () {
+    scope_DisabledMarkers.forEach(function (item) {
+      removeElement(item);
+		});
 	}
 
 	function pips ( grid ) {
@@ -1697,6 +1779,10 @@ function scope ( target, options, originalOptions ){
 	// Move closest handle to tapped location.
 	function eventTap ( event ) {
 
+		if (hasClass(event.target, options.cssClasses.disabledMarker)) {
+			return false;
+		}
+		
 		// The tap event shouldn't propagate up
 		event.stopPropagation();
 
@@ -1927,6 +2013,13 @@ function scope ( target, options, originalOptions ){
 
 		return to;
 	}
+	
+	function checkStepDisable (to) {
+    var step_index = scope_Spectrum.xPct.indexOf(to);
+    var node_options = scope_Spectrum.xOpts[step_index];
+    
+    return (node_options && node_options.disabled );
+	}
 
 	// Uses slider orientation to create CSS rules. a = base value;
 	function inRuleOrder ( v, a ) {
@@ -2031,7 +2124,7 @@ function scope ( target, options, originalOptions ){
 
 		to = checkHandlePosition(scope_Locations, handleNumber, to, lookBackward, lookForward, false);
 
-		if ( to === false ) {
+		if ( to === false || checkStepDisable(to) ) {
 			return false;
 		}
 
@@ -2129,12 +2222,21 @@ function scope ( target, options, originalOptions ){
 			fireEvent('update', handleNumber);
 
 			// Fire the event only for handles that received a new value, as per #579
-			if ( values[handleNumber] !== null && fireSetEvent ) {
+			if ( values[handleNumber] !== null && fireSetEvent && !checkDisabledValue(input) ) {
 				fireEvent('set', handleNumber);
 			}
+      
+      checkActivePips(values, scope_Pips, options);
 		});
 	}
 
+	function checkDisabledValue (value) {
+    var value_index = scope_Spectrum.xVal.indexOf(value);
+    var item_options = scope_Spectrum.xOpts[value_index];
+    
+    return (item_options && item_options.disabled);
+	}
+	
 	// Reset slider to initial values
 	function valueReset ( fireSetEvent ) {
 		valueSet(options.start, fireSetEvent);

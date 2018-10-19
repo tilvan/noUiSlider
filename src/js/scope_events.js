@@ -328,6 +328,10 @@
 	// Move closest handle to tapped location.
 	function eventTap ( event ) {
 
+		if (hasClass(event.target, options.cssClasses.disabledMarker)) {
+			return false;
+		}
+		
 		// The tap event shouldn't propagate up
 		event.stopPropagation();
 

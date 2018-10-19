@@ -57,12 +57,21 @@
 			fireEvent('update', handleNumber);
 
 			// Fire the event only for handles that received a new value, as per #579
-			if ( values[handleNumber] !== null && fireSetEvent ) {
+			if ( values[handleNumber] !== null && fireSetEvent && !checkDisabledValue(input) ) {
 				fireEvent('set', handleNumber);
 			}
+      
+      checkActivePips(values, scope_Pips, options);
 		});
 	}
 
+	function checkDisabledValue (value) {
+    var value_index = scope_Spectrum.xVal.indexOf(value);
+    var item_options = scope_Spectrum.xOpts[value_index];
+    
+    return (item_options && item_options.disabled);
+	}
+	
 	// Reset slider to initial values
 	function valueReset ( fireSetEvent ) {
 		valueSet(options.start, fireSetEvent);
