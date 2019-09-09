@@ -59,6 +59,13 @@
 
 		return to;
 	}
+	
+	function checkStepDisable (to) {
+    var step_index = scope_Spectrum.xPct.indexOf(to);
+    var node_options = scope_Spectrum.xOpts[step_index];
+    
+    return (node_options && node_options.disabled );
+	}
 
 	// Uses slider orientation to create CSS rules. a = base value;
 	function inRuleOrder ( v, a ) {
@@ -163,7 +170,7 @@
 
 		to = checkHandlePosition(scope_Locations, handleNumber, to, lookBackward, lookForward, false);
 
-		if ( to === false ) {
+		if ( to === false || checkStepDisable(to) ) {
 			return false;
 		}
 

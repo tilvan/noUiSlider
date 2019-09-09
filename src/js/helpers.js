@@ -115,3 +115,21 @@
 			y: y
 		};
 	}
+  
+  function checkActivePips (values, scope_Pips, options) {
+    if (scope_Pips) {
+      var current_value = Number(values[0]);
+    	var value_items_class = '.'+ options.cssClasses.value;
+      var value_items = scope_Pips.querySelectorAll(value_items_class);
+      
+      for (var item_value_index = 0; item_value_index < value_items.length; item_value_index ++) {
+      	var item = value_items[item_value_index];
+        var item_value = Number(item.getAttribute('data-value'));
+  
+        removeClass(item, options.cssClasses.valueActive);
+        if (item_value === current_value) {
+          addClass(item, options.cssClasses.valueActive);
+        }
+			}
+    }
+  }

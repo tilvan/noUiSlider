@@ -108,6 +108,7 @@
 	function handleEntryPoint ( index, value, that ) {
 
 		var percentage;
+		var options;
 
 		// Wrap numerical input in an array.
 		if ( typeof value === "number" ) {
@@ -149,6 +150,14 @@
 		}
 
 		that.xHighestCompleteStep.push(0);
+
+		if (!value[2]) {
+			options = null;
+		} else {
+			options = value[2];
+		}
+		
+		that.xOpts.push(options);
 	}
 
 	function handleStepPoint ( i, n, that ) {
@@ -178,6 +187,7 @@
 		this.xSteps = [ singleStep || false ];
 		this.xNumSteps = [ false ];
 		this.xHighestCompleteStep = [];
+		this.xOpts = [];
 
 		this.snap = snap;
 

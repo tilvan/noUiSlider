@@ -413,12 +413,16 @@
 				markerNormal: 'marker-normal',
 				markerLarge: 'marker-large',
 				markerSub: 'marker-sub',
+				markerDisabled: 'marker-disabled',
 				value: 'value',
 				valueHorizontal: 'value-horizontal',
 				valueVertical: 'value-vertical',
 				valueNormal: 'value-normal',
 				valueLarge: 'value-large',
-				valueSub: 'value-sub'
+				valueSub: 'value-sub',
+				valueDisabled: 'value-disabled',
+				valueActive: 'value-active',
+				disabledMarker: 'disabled-marker'
 			}
 		};
 

@@ -18,6 +18,8 @@
 				handle.children[0].setAttribute('aria-valuemax', max.toFixed(1));
 				handle.children[0].setAttribute('aria-valuenow', now.toFixed(1));
 				handle.children[0].setAttribute('aria-valuetext', text);
+        
+        checkActivePips(values, scope_Pips, options);
 			});
 		});
 	}

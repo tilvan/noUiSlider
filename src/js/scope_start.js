@@ -18,6 +18,7 @@ function scope ( target, options, originalOptions ){
 	var scope_Events = {};
 	var scope_Self;
 	var scope_Pips;
+	var scope_DisabledMarkers = [];
 	var scope_Document = target.ownerDocument;
 	var scope_DocumentElement = scope_Document.documentElement;
 	var scope_Body = scope_Document.body;

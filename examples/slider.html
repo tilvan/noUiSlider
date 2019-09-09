@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Revo slider</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="../distribute/nouislider.css" />
+    <style>
+      .slider__container {
+        width: 500px;
+        padding: 40px 0;
+        margin: 0 auto;
+      }
+
+      .noUi-disabled-marker::before{
+        content: '';
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #EEEEEE;
+        transform: translate(-50%, -50%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slider__container">
+      <div id="slider"></div>
+    </div>
+
+    <script src="../distribute/nouislider.js"></script>
+    <script>
+      var slider = document.getElementById('slider');
+
+      noUiSlider.create(slider, {
+        range: {
+          'min': 3,
+          '33.33333333333333': [6, 6],
+          '66.66666666666666': [12, 2, { disabled: true, disable_info: 20000 }],
+          'max': [14, null, { disabled: true, disable_info: 40000 }]
+        },
+        start: [ 6 ],
+        connect: [ true, false ],
+        pips: {
+          mode: 'range',
+          density: 100
+        }
+      });
+    </script>
+  </body>
+</html>
